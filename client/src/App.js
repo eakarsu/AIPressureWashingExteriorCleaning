@@ -33,7 +33,30 @@ import ChemicalAdvisor from './pages/ai/ChemicalAdvisor';
 import WeatherScheduler from './pages/ai/WeatherScheduler';
 import MarketingGenerator from './pages/ai/MarketingGenerator';
 import UpsellAdvisor from './pages/ai/UpsellAdvisor';
+import QuoteGenerator from './pages/ai/QuoteGenerator';
+import RouteOptimizer from './pages/ai/RouteOptimizer';
+import WeatherSchedule from './pages/ai/WeatherSchedule';
+import EquipmentMaintenancePredict from './pages/ai/EquipmentMaintenancePredict';
+import CustomerChurnPredict from './pages/ai/CustomerChurnPredict';
+import JobDetail from './pages/features/JobDetail';
 
+// // === Batch 06 Gaps & Frontend Mounts ===
+import CFAgenticJobOrchestrationPage from './pages/CFAgenticJobOrchestrationPage';
+import CFComputerVisionJobEstimationPage from './pages/CFComputerVisionJobEstimationPage';
+import CFCrewMobileCompanionPage from './pages/CFCrewMobileCompanionPage';
+import CFSeasonalDemandForecastingPage from './pages/CFSeasonalDemandForecastingPage';
+import CFCustomerLifecycleOptimizationPage from './pages/CFCustomerLifecycleOptimizationPage';
+import GapEquipmentWithoutEquipmentPage from './pages/GapEquipmentWithoutEquipmentPage';
+import GapCrewsWithoutCrewPage from './pages/GapCrewsWithoutCrewPage';
+import GapCustomersWithoutCustomerPage from './pages/GapCustomersWithoutCustomerPage';
+import GapContractsWithoutContractPage from './pages/GapContractsWithoutContractPage';
+import GapLimitedMobileAppForCrew1MobileReferenceNoPage from './pages/GapLimitedMobileAppForCrew1MobileReferenceNoPage';
+import GapNoRealPage from './pages/GapNoRealPage';
+import GapNoIntegrationWithPaymentProcessingSquareStriPage from './pages/GapNoIntegrationWithPaymentProcessingSquareStriPage';
+import GapLimitedCustomerSelfPage from './pages/GapLimitedCustomerSelfPage';
+import GapNoIntegrationWithAccountingQuickbooksFreshbooPage from './pages/GapNoIntegrationWithAccountingQuickbooksFreshbooPage';
+import GapNoWebhooksPage from './pages/GapNoWebhooksPage';
+import GapFrontendSeverelyUnderbuiltFor29Page from './pages/GapFrontendSeverelyUnderbuiltFor29Page';
 // Auth Context
 export const AuthContext = createContext(null);
 
@@ -151,8 +174,32 @@ function App() {
           <Route path="/ai/weather-scheduler" element={<ProtectedRoute><AppLayout><WeatherScheduler /></AppLayout></ProtectedRoute>} />
           <Route path="/ai/marketing-generator" element={<ProtectedRoute><AppLayout><MarketingGenerator /></AppLayout></ProtectedRoute>} />
           <Route path="/ai/upsell-advisor" element={<ProtectedRoute><AppLayout><UpsellAdvisor /></AppLayout></ProtectedRoute>} />
+          <Route path="/ai/quote-generator" element={<ProtectedRoute><AppLayout><QuoteGenerator /></AppLayout></ProtectedRoute>} />
+          <Route path="/ai/route-optimizer" element={<ProtectedRoute><AppLayout><RouteOptimizer /></AppLayout></ProtectedRoute>} />
+          <Route path="/ai/weather-schedule" element={<ProtectedRoute><AppLayout><WeatherSchedule /></AppLayout></ProtectedRoute>} />
+          <Route path="/ai/equipment-maintenance-predict" element={<ProtectedRoute><AppLayout><EquipmentMaintenancePredict /></AppLayout></ProtectedRoute>} />
+          <Route path="/ai/customer-churn-predict" element={<ProtectedRoute><AppLayout><CustomerChurnPredict /></AppLayout></ProtectedRoute>} />
+          <Route path="/jobs/:id" element={<ProtectedRoute><AppLayout><JobDetail /></AppLayout></ProtectedRoute>} />
           <Route path="/" element={<Navigate to="/dashboard" />} />
           <Route path="*" element={<Navigate to="/dashboard" />} />
+        
+          {/* // === Batch 06 Gaps & Frontend Mounts === */}
+          <Route path="/cf-agentic-job-orchestration" element={<CFAgenticJobOrchestrationPage />} />
+          <Route path="/cf-computer-vision-job-estimation" element={<CFComputerVisionJobEstimationPage />} />
+          <Route path="/cf-crew-mobile-companion" element={<CFCrewMobileCompanionPage />} />
+          <Route path="/cf-seasonal-demand-forecasting" element={<CFSeasonalDemandForecastingPage />} />
+          <Route path="/cf-customer-lifecycle-optimization" element={<CFCustomerLifecycleOptimizationPage />} />
+          <Route path="/gap-equipment-without-equipment" element={<GapEquipmentWithoutEquipmentPage />} />
+          <Route path="/gap-crews-without-crew" element={<GapCrewsWithoutCrewPage />} />
+          <Route path="/gap-customers-without-customer" element={<GapCustomersWithoutCustomerPage />} />
+          <Route path="/gap-contracts-without-contract" element={<GapContractsWithoutContractPage />} />
+          <Route path="/gap-limited-mobile-app-for-crew-1-mobile-reference-no-" element={<GapLimitedMobileAppForCrew1MobileReferenceNoPage />} />
+          <Route path="/gap-no-real" element={<GapNoRealPage />} />
+          <Route path="/gap-no-integration-with-payment-processing-square-stri" element={<GapNoIntegrationWithPaymentProcessingSquareStriPage />} />
+          <Route path="/gap-limited-customer-self" element={<GapLimitedCustomerSelfPage />} />
+          <Route path="/gap-no-integration-with-accounting-quickbooks-freshboo" element={<GapNoIntegrationWithAccountingQuickbooksFreshbooPage />} />
+          <Route path="/gap-no-webhooks" element={<GapNoWebhooksPage />} />
+          <Route path="/gap-frontend-severely-underbuilt-for-29" element={<GapFrontendSeverelyUnderbuiltFor29Page />} />
         </Routes>
       </Router>
     </AuthProvider>

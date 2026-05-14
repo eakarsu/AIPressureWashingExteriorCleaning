@@ -6,11 +6,25 @@ function createCrudRouter(tableName, options = {}) {
   const orderBy = options.orderBy || 'created_at DESC';
   const useAuth = options.publicGet ? false : true;
 
-  // GET / - List all
+  // GET / - List all (with pagination)
   router.get('/', useAuth ? auth : (req, res, next) => next(), async (req, res) => {
     try {
-      const result = await pool.query(`SELECT * FROM ${tableName} ORDER BY ${orderBy}`);
-      res.json(result.rows);
+      const page = Math.max(1, parseInt(req.query.page) || 1);
+      const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+      const offset = (page - 1) * limit;
+
+      const countRes = await pool.query(`SELECT COUNT(*) FROM ${tableName}`);
+      const total = parseInt(countRes.rows[0].count);
+
+      const result = await pool.query(
+        `SELECT * FROM ${tableName} ORDER BY ${orderBy} LIMIT $1 OFFSET $2`,
+        [limit, offset]
+      );
+
+      res.json({
+        data: result.rows,
+        pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      });
     } catch (err) {
       console.error(`List ${tableName} error:`, err);
       res.status(500).json({ error: 'Server error' });
@@ -33,7 +47,6 @@ function createCrudRouter(tableName, options = {}) {
   router.post('/', auth, async (req, res) => {
     try {
       const body = req.body;
-      // Filter out empty strings and undefined, keep only non-empty values
       const entries = Object.entries(body).filter(([k, v]) => v !== undefined && v !== '' && k !== 'id');
       if (entries.length === 0) return res.status(400).json({ error: 'No data provided' });
 
@@ -62,7 +75,6 @@ function createCrudRouter(tableName, options = {}) {
       const setClauses = entries.map(([k], i) => `${k} = $${i + 1}`);
       const values = entries.map(([, v]) => v === '' ? null : v);
 
-      // Add updated_at if the table has it
       setClauses.push(`updated_at = NOW()`);
 
       const result = await pool.query(
@@ -72,7 +84,6 @@ function createCrudRouter(tableName, options = {}) {
       if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
       res.json(result.rows[0]);
     } catch (err) {
-      // If updated_at doesn't exist, retry without it
       if (err.message && err.message.includes('updated_at')) {
         try {
           const entries2 = Object.entries(req.body).filter(([k, v]) => v !== undefined && k !== 'id' && k !== 'created_at');

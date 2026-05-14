@@ -36,6 +36,12 @@ const aiFeatures = [
   { title: 'AI Weather Scheduler', icon: '⛅', desc: 'Weather-optimized scheduling', path: '/ai/weather-scheduler' },
   { title: 'AI Marketing Generator', icon: '✨', desc: 'AI-generated marketing content', path: '/ai/marketing-generator' },
   { title: 'AI Upsell Advisor', icon: '💡', desc: 'Smart upsell recommendations', path: '/ai/upsell-advisor' },
+  { title: 'AI Quote Generator', icon: '💰', desc: 'Structured quote with line items', path: '/ai/quote-generator' },
+  { title: 'AI Route Optimizer', icon: '🗺️', desc: 'Optimize multi-stop job routes', path: '/ai/route-optimizer' },
+  { title: 'AI Weather Schedule', icon: '🌤️', desc: 'Weather-aware job scheduling', path: '/ai/weather-schedule' },
+  { title: 'Job Detail & Photos', icon: '📷', desc: 'Before/after photos & surface AI', path: '/jobs' },
+  { title: 'AI Equipment Maintenance Predict', icon: '🛠️', desc: 'Predict next-service windows', path: '/ai/equipment-maintenance-predict' },
+  { title: 'AI Customer Churn Predict', icon: '📉', desc: 'At-risk customers + outreach', path: '/ai/customer-churn-predict' },
 ];
 
 function Dashboard() {
