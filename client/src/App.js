@@ -57,6 +57,9 @@ import GapLimitedCustomerSelfPage from './pages/GapLimitedCustomerSelfPage';
 import GapNoIntegrationWithAccountingQuickbooksFreshbooPage from './pages/GapNoIntegrationWithAccountingQuickbooksFreshbooPage';
 import GapNoWebhooksPage from './pages/GapNoWebhooksPage';
 import GapFrontendSeverelyUnderbuiltFor29Page from './pages/GapFrontendSeverelyUnderbuiltFor29Page';
+import CodexCustomVizFeature from './pages/CodexCustomVizFeature';
+import CodexOperationsFeature from './pages/CodexOperationsFeature';
+
 // Auth Context
 export const AuthContext = createContext(null);
 
@@ -139,6 +142,9 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
+        <Route path="/codex/custom-viz" element={<ProtectedRoute><CodexCustomVizFeature /></ProtectedRoute>} />
+        <Route path="/codex/operations" element={<ProtectedRoute><CodexOperationsFeature /></ProtectedRoute>} />
+
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
           {/* Feature routes */}
