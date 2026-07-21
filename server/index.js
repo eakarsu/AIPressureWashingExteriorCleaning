@@ -6,15 +6,20 @@ require('dotenv').config();
 
 const app = express();
 const createCrudRouter = require('./routes/crudHelper');
+const { validateRuntime } = require('./governance/runtime');
+const { createProviderGate } = require('./governance/providerGate');
+const governanceRouter = require('./governance/router');
+const auth = require('./middleware/auth');
+
+validateRuntime();
 
 // Security middleware
 app.use(helmet());
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
-  credentials: true,
-}));
+const allowedOrigins = String(process.env.CORS_ORIGINS || process.env.CLIENT_URL || 'http://localhost:3000').split(',').map((value) => value.trim()).filter(Boolean);
+app.use(cors({ origin: (origin, callback) => !origin || allowedOrigins.includes(origin) ? callback(null, true) : callback(new Error('Origin not allowed by CORS')), credentials: true }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(createProviderGate(['/api/ai', '/api/gap', '/api/cf']));
 
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
@@ -23,13 +28,13 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 app.use('/api/auth', require('./routes/auth'));
 
 // AI routes (custom)
-app.use('/api/ai', require('./routes/ai'));
+app.use('/api/ai', auth, require('./routes/ai'));
 
 // Jobs routes (custom with photo upload sub-routes)
-app.use('/api/jobs', require('./routes/jobs'));
+app.use('/api/jobs', auth, require('./routes/jobs'));
 
 // Reports routes (custom)
-app.use('/api/reports', require('./routes/reports'));
+app.use('/api/reports', auth, require('./routes/reports'));
 
 // Generic CRUD routes (auth enforced inside crudHelper)
 app.use('/api/services', createCrudRouter('services', { orderBy: 'name ASC' }));
@@ -56,6 +61,7 @@ app.use('/api/marketing', createCrudRouter('marketing_campaigns', { orderBy: 'cr
 app.use('/api/locations', createCrudRouter('locations', { orderBy: 'name ASC' }));
 app.use('/api/route-sheets', createCrudRouter('route_sheets', { orderBy: 'route_date DESC' }));
 app.use('/api/time-tracking', createCrudRouter('time_entries', { orderBy: 'entry_date DESC' }));
+app.use('/api/governed-exterior-jobs', governanceRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -1,125 +1,36 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-# ============================================================
-# AI Pressure Washing & Exterior Cleaning - Start Script
-# ============================================================
-# This script:
-#   1. Kills any processes on ports 3000 and 3001
-#   2. Creates/resets the PostgreSQL database
-#   3. Seeds all tables with realistic data (15+ items each)
-#   4. Installs dependencies
-#   5. Starts backend (with hot reload via nodemon) and frontend
-# ============================================================
+PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
+BACKEND_PORT="${BACKEND_PORT:-${SERVER_PORT:-3001}}"
+FRONTEND_PORT="${FRONTEND_PORT:-${CLIENT_PORT:-3000}}"
+CHILD_PIDS=()
 
-set -e
-
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
-NC='\033[0m' # No Color
-
-echo -e "${CYAN}"
-echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║   🧹 AI Pressure Washing & Exterior Cleaning Platform 🧹   ║"
-echo "║                     Starting Up...                          ║"
-echo "╚══════════════════════════════════════════════════════════════╝"
-echo -e "${NC}"
-
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$PROJECT_DIR"
-
-# Load environment variables
-if [ -f .env ]; then
-    export $(grep -v '^#' .env | xargs)
-    echo -e "${GREEN}✓ Environment variables loaded${NC}"
-else
-    echo -e "${RED}✗ .env file not found! Please create one.${NC}"
+require_file() { [ -f "$1" ] || { echo "Missing required file: $1" >&2; exit 1; }; }
+require_dir() { [ -d "$1" ] || { echo "Missing dependencies: $1 (install explicitly before startup)" >&2; exit 1; }; }
+port_free() {
+  if command -v lsof >/dev/null 2>&1 && lsof -ti ":$1" >/dev/null 2>&1; then
+    echo "Port $1 is already in use; refusing to terminate another process." >&2
     exit 1
-fi
-
-# ============================================================
-# Step 1: Clean up used ports
-# ============================================================
-echo -e "\n${BLUE}[1/5] Cleaning up ports 3000 and 3001...${NC}"
-
-cleanup_port() {
-    local port=$1
-    local pids=$(lsof -ti :$port 2>/dev/null || true)
-    if [ -n "$pids" ]; then
-        echo -e "${YELLOW}  Killing processes on port $port: $pids${NC}"
-        echo "$pids" | xargs kill -9 2>/dev/null || true
-        sleep 1
-    else
-        echo -e "${GREEN}  Port $port is free${NC}"
-    fi
+  fi
 }
-
-cleanup_port 3000
-cleanup_port 3001
-
-# ============================================================
-# Step 2: Setup PostgreSQL Database
-# ============================================================
-echo -e "\n${BLUE}[2/5] Setting up PostgreSQL database...${NC}"
-
-# Extract DB name from DATABASE_URL
-DB_NAME=$(echo $DATABASE_URL | sed 's/.*\///')
-DB_USER=$(echo $DATABASE_URL | sed 's/postgresql:\/\/\([^:]*\).*/\1/')
-
-# Drop and recreate database
-echo -e "${YELLOW}  Dropping existing database (if any)...${NC}"
-dropdb --if-exists "$DB_NAME" 2>/dev/null || true
-echo -e "${YELLOW}  Creating database '$DB_NAME'...${NC}"
-createdb "$DB_NAME" 2>/dev/null || {
-    echo -e "${YELLOW}  Database may already exist, continuing...${NC}"
+cleanup() {
+  for pid in "${CHILD_PIDS[@]:-}"; do
+    [ -n "$pid" ] && kill "$pid" 2>/dev/null || true
+  done
 }
-echo -e "${GREEN}✓ Database ready${NC}"
+trap cleanup INT TERM EXIT
 
-# ============================================================
-# Step 3: Install dependencies
-# ============================================================
-echo -e "\n${BLUE}[3/5] Installing dependencies...${NC}"
+require_file "$PROJECT_DIR/.env"
+require_dir "$PROJECT_DIR/node_modules"
+require_dir "$PROJECT_DIR/client/node_modules"
+port_free "$BACKEND_PORT"
+port_free "$FRONTEND_PORT"
 
-echo -e "${YELLOW}  Installing server dependencies...${NC}"
-npm install --silent 2>&1 | tail -1
+(cd "$PROJECT_DIR/." && BACKEND_PORT="$BACKEND_PORT" node server/index.js) &
+CHILD_PIDS+=("$!")
+(cd "$PROJECT_DIR/client" && PORT="$FRONTEND_PORT" BROWSER=none npm start) &
+CHILD_PIDS+=("$!")
 
-echo -e "${YELLOW}  Installing client dependencies...${NC}"
-cd client
-npm install --silent 2>&1 | tail -1
-cd ..
-
-echo -e "${GREEN}✓ Dependencies installed${NC}"
-
-# ============================================================
-# Step 4: Seed the database
-# ============================================================
-echo -e "\n${BLUE}[4/5] Seeding database with sample data...${NC}"
-node server/seed.js
-echo -e "${GREEN}✓ Database seeded with sample data${NC}"
-
-# ============================================================
-# Step 5: Start the application
-# ============================================================
-echo -e "\n${BLUE}[5/5] Starting application...${NC}"
-echo -e "${CYAN}"
-echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║                    Application Starting                      ║"
-echo "║                                                              ║"
-echo "║   Frontend:  http://localhost:3000                           ║"
-echo "║   Backend:   http://localhost:3001                           ║"
-echo "║                                                              ║"
-echo "║   Login:     admin@pressurewash.com / admin123               ║"
-echo "║                                                              ║"
-echo "║   Press Ctrl+C to stop all services                         ║"
-echo "╚══════════════════════════════════════════════════════════════╝"
-echo -e "${NC}"
-
-# Start backend with nodemon (hot reload) and frontend concurrently
-npx concurrently \
-    --names "SERVER,CLIENT" \
-    --prefix-colors "blue,green" \
-    "npx nodemon --watch server server/index.js" \
-    "cd client && PORT=3000 BROWSER=none npm start"
+echo "Exterior service services started without installing, seeding, migrating, or reclaiming ports."
+wait "${CHILD_PIDS[@]}"
