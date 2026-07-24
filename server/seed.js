@@ -3,6 +3,12 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 const pool = require('./db');
 
+function requireDemoPassword() {
+  const password = process.env.DEMO_PASSWORD || process.env.SEED_DEMO_PASSWORD || process.env.DEMO_SEED_PASSWORD || '';
+  if (password.length < 12 || password.length > 1024) throw new Error('DEMO_PASSWORD must contain 12-1024 characters');
+  return password;
+}
+
 async function seed() {
   const client = await pool.connect();
 
@@ -15,8 +21,8 @@ async function seed() {
     // ========================================================
     // 1. USERS
     // ========================================================
-    const adminHash = await bcrypt.hash('admin123', 10);
-    const userHash = await bcrypt.hash('password123', 10);
+    const adminHash = await bcrypt.hash(requireDemoPassword(), 10);
+    const userHash = await bcrypt.hash(requireDemoPassword(), 10);
 
     const usersData = [
       ['admin@pressurewash.com', adminHash, 'Mike', 'Anderson', '(555) 100-0001', 'admin'],
@@ -886,7 +892,7 @@ async function seed() {
     console.log('\n========================================');
     console.log('Database seeded successfully!');
     console.log('========================================');
-    console.log('Admin login: admin@pressurewash.com / admin123');
+    console.log('Demo login users provisioned from the local environment.');
     console.log('========================================\n');
 
   } catch (err) {
