@@ -10,6 +10,7 @@ const { validateRuntime } = require('./governance/runtime');
 const { createProviderGate } = require('./governance/providerGate');
 const governanceRouter = require('./governance/router');
 const auth = require('./middleware/auth');
+const { bootstrapRuntime } = require('./runtimeBootstrap');
 
 validateRuntime();
 
@@ -19,7 +20,7 @@ const allowedOrigins = String(process.env.CORS_ORIGINS || process.env.CLIENT_URL
 app.use(cors({ origin: (origin, callback) => !origin || allowedOrigins.includes(origin) ? callback(null, true) : callback(new Error('Origin not allowed by CORS')), credentials: true }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-app.use(createProviderGate(['/api/ai', '/api/gap', '/api/cf']));
+app.use(createProviderGate(['/api/gap', '/api/cf']));
 
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
@@ -103,8 +104,16 @@ app.use('/api/gap-no-integration-with-accounting-quickbooks-freshboo', require('
 app.use('/api/gap-no-webhooks', require('./routes/gapFeat_no_webhooks'));
 app.use('/api/gap-frontend-severely-underbuilt-for-29', require('./routes/gapFeat_frontend_severely_underbuilt_for_29'));
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+async function start() {
+  await bootstrapRuntime();
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+start().catch((error) => {
+  console.error('Failed to start Pressure Washing service:', error);
+  process.exit(1);
 });
 
 module.exports = app;

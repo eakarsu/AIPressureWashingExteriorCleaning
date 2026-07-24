@@ -3,7 +3,7 @@ const auth = require('../middleware/auth');
 const { aiRateLimiter } = require('../middleware/rateLimiter');
 const pool = require('../db');
 
-const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const OPENROUTER_URL = `${(process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1').replace(/\/+$/, '')}/chat/completions`;
 const MODEL = process.env.OPENROUTER_MODEL || 'anthropic/claude-3-5-sonnet-20241022';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -33,7 +33,9 @@ async function callOpenRouter(systemPrompt, userMessage) {
   }
 
   const data = await response.json();
-  return data.choices[0].message.content;
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error('OpenRouter returned no content');
+  return content;
 }
 
 function parseAIJson(text) {
