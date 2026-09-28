@@ -70,7 +70,7 @@ function Login() {
             className="btn btn-autofill"
             onClick={handleAutoFill}
           >
-            Auto-Fill Credentials
+            Auto Fill Demo Credentials
           </button>
 
           <button
