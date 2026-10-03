@@ -1,3 +1,4 @@
+import AppSidebar from './components/AppSidebar';
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
 import Login from './pages/Login';
@@ -128,12 +129,13 @@ function Header() {
 
 function AppLayout({ children }) {
   return (
-    <>
-      <Header />
-      <main className="main-content">
-        {children}
-      </main>
-    </>
+    <div className="codex-nav-shell">
+      <AppSidebar />
+      <div className="codex-protected-main">
+        <Header />
+        <main className="main-content">{children}</main>
+      </div>
+    </div>
   );
 }
 
@@ -142,8 +144,8 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-        <Route path="/codex/custom-viz" element={<ProtectedRoute><CodexCustomVizFeature /></ProtectedRoute>} />
-        <Route path="/codex/operations" element={<ProtectedRoute><CodexOperationsFeature /></ProtectedRoute>} />
+        <Route path="/codex/custom-viz" element={<ProtectedRoute><AppLayout><CodexCustomVizFeature /></AppLayout></ProtectedRoute>} />
+        <Route path="/codex/operations" element={<ProtectedRoute><AppLayout><CodexOperationsFeature /></AppLayout></ProtectedRoute>} />
 
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
