@@ -41,6 +41,7 @@ function Jobs() {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({});
@@ -48,13 +49,16 @@ function Jobs() {
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const res = await api.get('/jobs');
-      const data = Array.isArray(res.data) ? res.data : res.data.data || [];
+      const data = Array.isArray(res.data) ? res.data : res.data?.data;
+      if (!Array.isArray(data)) throw new Error('The jobs response was not an array.');
       setItems(data);
     } catch (err) {
       console.error('Failed to fetch jobs:', err);
       setItems([]);
+      setLoadError('Unable to load jobs. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -120,6 +124,7 @@ function Jobs() {
         <span style={{ fontSize: 14, color: '#7986cb' }}>{filtered.length} jobs</span>
       </div>
 
+      {loadError && <p role="alert">{loadError}</p>}
       {loading ? (
         <div style={{ padding: 40, textAlign: 'center', color: '#888' }}>Loading jobs...</div>
       ) : filtered.length === 0 ? (

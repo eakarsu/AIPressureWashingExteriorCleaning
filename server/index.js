@@ -70,18 +70,14 @@ app.get('/api/health', (req, res) => {
 });
 
 // 404 handler
-app.use((req, res) => {
-  res.status(404).json({ error: 'Route not found' });
-});
 
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({ error: 'Internal server error' });
-});
-
-const PORT = process.env.BACKEND_PORT || 3001;
-
+// Advisory AI reports only; native execution and approval routes stay unchanged.
+const aiWorkspaceSupport = require("./aiWorkspaceAdapters.cjs");
+const aiWorkspaceDatabase = require("./db.js");
+app.use('/api/report-workspace', require("./aiWorkspace.cjs").createAIWorkspaceRouter({
+  pool: aiWorkspaceDatabase, authenticateToken: require("./middleware/auth.js"),
+  aiRateLimiter: aiWorkspaceSupport.createWorkspaceLimiter(), features: require("./aiWorkspaceFeatures.json"),
+}));
 
 // === Custom Feature Mounts (batch_06) ===
 app.use('/api/cf-agentic-job-orchestration', require('./routes/customFeat01_AgenticJobOrchestration'));
@@ -103,6 +99,19 @@ app.use('/api/gap-limited-customer-self', require('./routes/gapFeat_limited_cust
 app.use('/api/gap-no-integration-with-accounting-quickbooks-freshboo', require('./routes/gapFeat_no_integration_with_accounting_quickbooks_freshboo'));
 app.use('/api/gap-no-webhooks', require('./routes/gapFeat_no_webhooks'));
 app.use('/api/gap-frontend-severely-underbuilt-for-29', require('./routes/gapFeat_frontend_severely_underbuilt_for_29'));
+
+// 404 handler (must be after all routes)
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found' });
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+const PORT = process.env.BACKEND_PORT || 3001;
 
 async function start() {
   await bootstrapRuntime();

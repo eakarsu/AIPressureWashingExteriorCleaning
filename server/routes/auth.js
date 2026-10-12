@@ -48,6 +48,27 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// Use the already configured demo account without exposing its password to the client.
+router.post('/demo-login', async (_req, res) => {
+  const email = process.env.DEMO_EMAIL;
+  const password = process.env.DEMO_PASSWORD;
+  if (process.env.NODE_ENV === 'production' || !email || !password) {
+    return res.status(503).json({ error: 'Demo login is not configured for this environment.' });
+  }
+  try {
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    const user = result.rows[0];
+    if (!user || !(await bcrypt.compare(password, user.password_hash))) {
+      return res.status(503).json({ error: 'The configured demo account is unavailable.' });
+    }
+    const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, jwtSecret(), { expiresIn: '7d' });
+    res.json({ token, user: { id: user.id, name: `${user.first_name} ${user.last_name}`, email: user.email, role: user.role } });
+  } catch (err) {
+    console.error('Demo login error:', err);
+    res.status(503).json({ error: 'Demo login is unavailable.' });
+  }
+});
+
 // GET /api/auth/me
 router.get('/me', auth, async (req, res) => {
   try {

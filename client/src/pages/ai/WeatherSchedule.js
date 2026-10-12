@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import AIReport from '../../components/AIReport';
+import CompleteAIExamples from '../../components/CompleteAIExamples';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api';
 
@@ -36,10 +38,6 @@ function WeatherSchedule() {
     }
   };
 
-  const renderRisk = (level) => {
-    const colors = { low: '#2e7d32', medium: '#f57c00', high: '#c62828', critical: '#b71c1c' };
-    return <span style={{ color: colors[level] || '#555', fontWeight: 700 }}>{level?.toUpperCase() || '-'}</span>;
-  };
 
   return (
     <div className="ai-page">
@@ -53,7 +51,7 @@ function WeatherSchedule() {
 
       <div className="ai-input-section">
         <h3>Schedule Parameters</h3>
-        <form onSubmit={handleSubmit}>
+        <CompleteAIExamples busy={loading} context="Exterior cleaning scheduling"><form onSubmit={handleSubmit}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div className="form-group">
               <label>Date Range Start</label>
@@ -98,7 +96,7 @@ function WeatherSchedule() {
           <button type="submit" className="btn btn-success" disabled={loading}>
             {loading ? 'Analyzing...' : 'Generate Weather Schedule'}
           </button>
-        </form>
+        </form></CompleteAIExamples>
       </div>
 
       {error && <div style={{ padding: 24 }}><div className="login-error">{error}</div></div>}
@@ -110,64 +108,7 @@ function WeatherSchedule() {
         </div>
       )}
 
-      {result && !loading && (
-        <div className="ai-result-section">
-          <h2 className="ai-section-title">Weather-Optimized Schedule</h2>
-
-          {/* Scheduling recommendations */}
-          {result.scheduling_recommendations?.length > 0 && (
-            <div className="ai-result-card">
-              <h3>Recommended Schedule</h3>
-              {result.scheduling_recommendations.map((rec, i) => (
-                <div key={i} style={{ borderBottom: '1px solid #f0f0f0', paddingBottom: 12, marginBottom: 12 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div>
-                      <strong>{rec.job_description || rec.job || `Job ${i + 1}`}</strong>
-                      {rec.recommended_date && <p style={{ margin: '2px 0', color: '#1565c0', fontSize: 13 }}>📅 {rec.recommended_date}</p>}
-                      {rec.reasoning && <p style={{ margin: '2px 0', color: '#555', fontSize: 13 }}>{rec.reasoning}</p>}
-                    </div>
-                    {rec.risk_level && <div style={{ textAlign: 'right' }}>{renderRisk(rec.risk_level)}</div>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Avoid dates */}
-          {result.avoid_dates?.length > 0 && (
-            <div className="ai-result-card" style={{ borderLeft: '4px solid #c62828' }}>
-              <h3 style={{ color: '#c62828' }}>⚠️ Dates to Avoid</h3>
-              <ul>
-                {result.avoid_dates.map((d, i) => (
-                  <li key={i}>{typeof d === 'string' ? d : `${d.date}: ${d.reason}`}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Best windows */}
-          {result.best_windows?.length > 0 && (
-            <div className="ai-result-card" style={{ borderLeft: '4px solid #2e7d32' }}>
-              <h3 style={{ color: '#2e7d32' }}>✅ Best Work Windows</h3>
-              <ul>
-                {result.best_windows.map((w, i) => (
-                  <li key={i}>{typeof w === 'string' ? w : `${w.dates || w.date_range}: ${w.reason || w.description}`}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Risk flags */}
-          {result.risk_flags?.length > 0 && (
-            <div className="ai-result-card">
-              <h3>Risk Flags</h3>
-              <ul>{result.risk_flags.map((f, i) => <li key={i}>{typeof f === 'string' ? f : JSON.stringify(f)}</li>)}</ul>
-            </div>
-          )}
-
-          {result.notes && <div className="ai-highlight">{result.notes}</div>}
-        </div>
-      )}
+      {result !== null && !loading && <div className="ai-result-section"><AIReport response={result} title="Weather-optimized schedule" /></div>}
     </div>
   );
 }

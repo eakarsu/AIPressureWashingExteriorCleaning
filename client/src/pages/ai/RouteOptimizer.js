@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import AIReport from '../../components/AIReport';
+import CompleteAIExamples from '../../components/CompleteAIExamples';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api';
 
@@ -43,7 +45,7 @@ function RouteOptimizer() {
 
       <div className="ai-input-section">
         <h3>Job Locations</h3>
-        <form onSubmit={handleSubmit}>
+        <CompleteAIExamples busy={loading} context="Exterior cleaning scheduling"><form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Service Date</label>
             <input type="date" value={date} onChange={e => setDate(e.target.value)} required />
@@ -79,7 +81,7 @@ function RouteOptimizer() {
           <button type="submit" className="btn btn-success" disabled={loading}>
             {loading ? 'Optimizing...' : 'Optimize Route'}
           </button>
-        </form>
+        </form></CompleteAIExamples>
       </div>
 
       {error && <div style={{ padding: 24 }}><div className="login-error">{error}</div></div>}
@@ -91,61 +93,7 @@ function RouteOptimizer() {
         </div>
       )}
 
-      {result && !loading && (
-        <div className="ai-result-section">
-          <h2 className="ai-section-title">Optimized Route</h2>
-
-          {/* Summary metrics */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
-            {result.total_drive_time_minutes != null && (
-              <div className="ai-metric">
-                <span className="metric-value">{result.total_drive_time_minutes} min</span>
-                <span className="metric-label">Total Drive Time</span>
-              </div>
-            )}
-            {result.efficiency_improvement_percent != null && (
-              <div className="ai-metric">
-                <span className="metric-value" style={{ color: '#2e7d32' }}>+{result.efficiency_improvement_percent}%</span>
-                <span className="metric-label">Efficiency Gain</span>
-              </div>
-            )}
-            {result.total_distance_miles != null && (
-              <div className="ai-metric">
-                <span className="metric-value">{result.total_distance_miles} mi</span>
-                <span className="metric-label">Total Distance</span>
-              </div>
-            )}
-          </div>
-
-          {/* Optimized sequence */}
-          {result.optimized_sequence?.length > 0 && (
-            <div className="ai-result-card">
-              <h3>Optimized Stop Sequence</h3>
-              <ol style={{ paddingLeft: 20 }}>
-                {result.optimized_sequence.map((stop, i) => (
-                  <li key={i} style={{ marginBottom: 12, paddingBottom: 12, borderBottom: '1px solid #f0f0f0' }}>
-                    <strong>{stop.customer_name || stop.address || `Stop ${i + 1}`}</strong>
-                    {stop.address && <p style={{ margin: '2px 0', color: '#555', fontSize: 13 }}>{stop.address}</p>}
-                    {stop.estimated_arrival && <p style={{ margin: '2px 0', color: '#1565c0', fontSize: 13 }}>Arrival: {stop.estimated_arrival}</p>}
-                    {stop.drive_time_from_previous && <p style={{ margin: '2px 0', color: '#777', fontSize: 12 }}>Drive from previous: {stop.drive_time_from_previous} min</p>}
-                    {stop.notes && <p style={{ margin: '2px 0', color: '#666', fontSize: 12, fontStyle: 'italic' }}>{stop.notes}</p>}
-                  </li>
-                ))}
-              </ol>
-            </div>
-          )}
-
-          {/* Tips / recommendations */}
-          {result.recommendations?.length > 0 && (
-            <div className="ai-result-card">
-              <h3>Route Tips</h3>
-              <ul>{result.recommendations.map((r, i) => <li key={i}>{r}</li>)}</ul>
-            </div>
-          )}
-
-          {result.notes && <div className="ai-highlight">{result.notes}</div>}
-        </div>
-      )}
+      {result !== null && !loading && <div className="ai-result-section"><AIReport response={result} title="Optimized route" /></div>}
     </div>
   );
 }

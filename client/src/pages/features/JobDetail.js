@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import AIReport from '../../components/AIReport';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../api';
 
@@ -253,69 +254,7 @@ function JobDetail() {
             <div className="dots"><div className="dot" /><div className="dot" /><div className="dot" /></div>
           </div>
         )}
-        {assessment && !assessLoading && (
-          <div>
-            {/* Severity badge */}
-            {assessment.contamination_severity && (
-              <div style={{ marginBottom: 12 }}>
-                <span style={{
-                  padding: '4px 12px', borderRadius: 12, fontSize: 12, fontWeight: 700,
-                  backgroundColor: assessment.contamination_severity === 'extreme' ? '#ffebee' : assessment.contamination_severity === 'heavy' ? '#fff3e0' : '#e8f5e9',
-                  color: assessment.contamination_severity === 'extreme' ? '#b71c1c' : assessment.contamination_severity === 'heavy' ? '#e65100' : '#2e7d32',
-                }}>
-                  Contamination: {assessment.contamination_severity?.toUpperCase()}
-                </span>
-              </div>
-            )}
-
-            {assessment.surface_condition && (
-              <p style={{ color: '#333', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{assessment.surface_condition}</p>
-            )}
-
-            {assessment.recommended_approach && (
-              <div style={{ background: '#f3f8ff', borderRadius: 6, padding: 12, marginTop: 8 }}>
-                <strong style={{ color: '#1565c0' }}>Recommended Approach:</strong>
-                <p style={{ margin: '4px 0 0', color: '#333', fontSize: 14 }}>{
-                  Array.isArray(assessment.recommended_approach)
-                    ? assessment.recommended_approach.join('\n')
-                    : assessment.recommended_approach
-                }</p>
-              </div>
-            )}
-
-            {assessment.chemicals_recommended?.length > 0 && (
-              <div style={{ marginTop: 10 }}>
-                <strong>Recommended Chemicals:</strong>
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
-                  {assessment.chemicals_recommended.map((c, i) => (
-                    <span key={i} className="ai-badge">{c}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {assessment.safety_precautions?.length > 0 && (
-              <div style={{ marginTop: 10, background: '#fff8e1', borderRadius: 6, padding: 10 }}>
-                <strong style={{ color: '#e65100' }}>⚠️ Safety Precautions:</strong>
-                <ul style={{ margin: '4px 0 0', paddingLeft: 20 }}>
-                  {assessment.safety_precautions.map((p, i) => <li key={i} style={{ fontSize: 13 }}>{p}</li>)}
-                </ul>
-              </div>
-            )}
-
-            {assessment.estimated_time_hours && (
-              <p style={{ marginTop: 8, fontSize: 13, color: '#555' }}>
-                Estimated time: <strong>{assessment.estimated_time_hours} hours</strong>
-              </p>
-            )}
-
-            {!assessment.surface_condition && !assessment.recommended_approach && (
-              <pre style={{ fontSize: 12, color: '#666', whiteSpace: 'pre-wrap', overflow: 'auto' }}>
-                {JSON.stringify(assessment, null, 2)}
-              </pre>
-            )}
-          </div>
-        )}
+        {assessment && !assessLoading && <AIReport response={assessment} title="Surface assessment" />}
         {!assessment && !assessLoading && (
           <p style={{ color: '#aaa', fontSize: 13 }}>Click "Run Assessment" to analyze surface conditions using AI vision</p>
         )}
@@ -340,33 +279,7 @@ function JobDetail() {
             <div className="dots"><div className="dot" /><div className="dot" /><div className="dot" /></div>
           </div>
         )}
-        {followup && !followupLoading && showEmail && (
-          <div>
-            {followup.subject && (
-              <div style={{ marginBottom: 8 }}>
-                <strong>Subject:</strong> <span style={{ color: '#1565c0' }}>{followup.subject}</span>
-              </div>
-            )}
-            {(followup.body || typeof followup === 'string') && (
-              <div style={{ background: '#fafafa', border: '1px solid #e0e0e0', borderRadius: 6, padding: 14 }}>
-                <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontSize: 13, lineHeight: 1.7, color: '#333', fontFamily: 'inherit' }}>
-                  {followup.body || followup}
-                </pre>
-              </div>
-            )}
-            {followup.care_tips?.length > 0 && (
-              <div style={{ marginTop: 10 }}>
-                <strong>Care Tips Included:</strong>
-                <ul style={{ marginTop: 4 }}>{followup.care_tips.map((t, i) => <li key={i} style={{ fontSize: 13 }}>{t}</li>)}</ul>
-              </div>
-            )}
-            {!followup.body && typeof followup === 'object' && !followup.subject && (
-              <pre style={{ fontSize: 12, color: '#666', whiteSpace: 'pre-wrap', overflow: 'auto' }}>
-                {JSON.stringify(followup, null, 2)}
-              </pre>
-            )}
-          </div>
-        )}
+        {followup && !followupLoading && showEmail && <AIReport response={followup} title="Customer follow-up email" />}
         {!followup && !followupLoading && (
           <p style={{ color: '#aaa', fontSize: 13 }}>Generate a personalized follow-up email with care tips and rebooking offer for this customer</p>
         )}

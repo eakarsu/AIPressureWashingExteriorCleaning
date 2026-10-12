@@ -5,6 +5,7 @@ import api from '../api';
 function GenericFeature({ title, apiEndpoint, columns, formFields, icon }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [search, setSearch] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
   const [modalMode, setModalMode] = useState(null); // 'view', 'edit', 'create'
@@ -14,13 +15,16 @@ function GenericFeature({ title, apiEndpoint, columns, formFields, icon }) {
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const res = await api.get(apiEndpoint);
-      const data = Array.isArray(res.data) ? res.data : res.data.data || res.data.items || [];
+      const data = Array.isArray(res.data) ? res.data : res.data?.data;
+      if (!Array.isArray(data)) throw new Error('The record list response was not an array.');
       setItems(data);
     } catch (err) {
       console.error('Failed to fetch items:', err);
       setItems([]);
+      setLoadError('Unable to load records. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -176,6 +180,7 @@ function GenericFeature({ title, apiEndpoint, columns, formFields, icon }) {
         </span>
       </div>
 
+      {loadError && <p role="alert">{loadError}</p>}
       {loading ? (
         <div className="loading-container">
           <div className="spinner" />

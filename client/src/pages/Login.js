@@ -11,10 +11,18 @@ function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleAutoFill = () => {
-    setEmail(process.env.REACT_APP_DEMO_EMAIL || '');
-    setPassword(process.env.REACT_APP_DEMO_PASSWORD || '');
+  const handleDemoLogin = async () => {
     setError('');
+    setLoading(true);
+    try {
+      const res = await api.post('/auth/demo-login');
+      login(res.data.user, res.data.token);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Demo login is unavailable. Sign in with your own account.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -68,9 +76,10 @@ function Login() {
           <button
             type="button"
             className="btn btn-autofill"
-            onClick={handleAutoFill}
+            onClick={handleDemoLogin}
+            disabled={loading}
           >
-            Auto Fill Demo Credentials
+            Log In as Demo
           </button>
 
           <button

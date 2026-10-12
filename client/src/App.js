@@ -1,3 +1,4 @@
+import AIReportLibrary from "./components/AIReportLibrary";
 import AppSidebar from './components/AppSidebar';
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
@@ -141,7 +142,7 @@ function AppLayout({ children }) {
 
 function App() {
   return (
-    <AuthProvider>
+    <><AIReportLibrary floating /><AuthProvider>
       <Router>
         <Routes>
         <Route path="/codex/custom-viz" element={<ProtectedRoute><AppLayout><CodexCustomVizFeature /></AppLayout></ProtectedRoute>} />
@@ -210,7 +211,7 @@ function App() {
           <Route path="/gap-frontend-severely-underbuilt-for-29" element={<GapFrontendSeverelyUnderbuiltFor29Page />} />
         </Routes>
       </Router>
-    </AuthProvider>
+    </AuthProvider></>
   );
 }
 
